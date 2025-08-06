@@ -3,6 +3,7 @@
 #git add .
 #git commit -m "clone repo code(or whaterver)"
 #git push 
+#after suppsoe you push numerous greetings and to see specific greetings you need to go to actions and on left side there will be list click on where you want to go ..
 
 
 name : Deploy Dist
@@ -12,7 +13,30 @@ jobs :
         runs-on : ubuntu-latest
         steps : 
             - name : Get Code
-              run : | 
-                echo "cloning repo ..."
-                echo "${{toJson(github)}}" #tgis github means its github actions context and we shoud write in this format
-                git clone https://github.com/${{github.repository}}.git #it will clone it into your repository.
+              uses : actions/checkout@v4       # this is where easy mehtod start ...
+            - name : Install node 20
+              uses : actions/setup-node@v4     # i just go back to github actions marketplace and search node.js and i scroll down and see usage and copy the uses link
+              with : 
+                node-version : 20   #this is used to select which version of you want to need i also check it form marketplace and search node.js
+            - name : print node version
+              run : node -v 
+            - name : Install Dependencies
+              run : npm ci     #this will install the dependencies and ci means clean install it will install exact latest available version related to your work for dependencies 
+            - name : Run tests
+              run : npm test   #this is what we name in package jason file at line 11    
+
+#this is all now go for add commit etc...              
+
+
+
+
+#this was the first one below :-
+
+              #run : | 
+                #echo "cloning repo ..."
+                #echo "${{toJson(github)}}" #tgis github means its github actions context and we shoud write in this format
+                #git clone https://github.com/${{github.repository}}.git #it will clone it into your repository.
+                  
+
+#now the above method is quite difficult there is another method go to google search github actions marketplace.
+#go to market place and search there checkout click on it and scroll down go to usage and start doing                
