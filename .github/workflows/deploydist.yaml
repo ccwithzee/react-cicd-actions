@@ -1,0 +1,18 @@
+#also make sure that you are connected to your repository
+#in terminal you know after writing codes all you need to do is run following commands in terminal 
+#git add .
+#git commit -m "clone repo code(or whaterver)"
+#git push 
+
+
+name : Deploy Dist
+on : [push , workflow_dispatch] ##workflow_dispatch will create a button in github actions sections
+jobs :
+    test:
+        runs-on : ubuntu-latest
+        steps : 
+            - name : Get Code
+              run : | 
+                echo "cloning repo ..."
+                echo "${{toJson(github)}}" #tgis github means its github actions context and we shoud write in this format
+                git clone https://github.com/${{github.repository}}.git #it will clone it into your repository.
