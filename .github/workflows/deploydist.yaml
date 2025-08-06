@@ -9,7 +9,8 @@
 name : Deploy Dist
 on : [push , workflow_dispatch] ##workflow_dispatch will create a button in github actions sections
 jobs :
-    test:
+    test: ##now the above method is quite difficult there is another method go to google search github actions marketplace.
+          #go to market place and search there checkout click on it and scroll down go to usage and start doing
         runs-on : ubuntu-latest
         steps : 
             - name : Get Code
@@ -18,15 +19,48 @@ jobs :
               uses : actions/setup-node@v4     # i just go back to github actions marketplace and search node.js and i scroll down and see usage and copy the uses link
               with : 
                 node-version : 20   #this is used to select which version of you want to need i also check it form marketplace and search node.js
-            - name : print node version
-              run : node -v 
+            #- name : print node version
+             # run : node -v 
+            - name : cache dependencies  # this is used to cache files ad in downloading npm modules it was taking time so thats why we uses caches 
+              uses : actions/cache@v4 #same get form marketplace
+              with : 
+                path : ~/.npm
+                key : ${{runner.os}}-node-${{ hashFiles('**/package-lock.json')}}  # this line means runner os is ubuntu adn hashfile generate a key as : ubuntu-node-223342 as this foramt
             - name : Install Dependencies
               run : npm ci     #this will install the dependencies and ci means clean install it will install exact latest available version related to your work for dependencies 
             - name : Run tests
               run : npm test   #this is what we name in package jason file at line 11    
+    deploy :
+        needs: test ##this will deploy both test and deploy at the same time in actions adn we dont want this so we use needs adn it will  first finish test then after it goes for deploy means first test run then deploy
+        runs-on : ubuntu-latest           #now we are using deployment
+        steps : 
+            - name : Get Code
+              uses : actions/checkout@v4 
+            - name : Install Node 20
+              uses : actions/setup-node@v4 
+              with : 
+                node-version : 20
+            - name : cache dependencies # now this cache is copied from above one it will install nodes in no time and theri dependencies for deploy cade which is after test .
+              uses : actions/cache@v4 #same get form marketplace
+              with : 
+                path : ~/.npm
+                key : ${{runner.os}}-node-${{ hashFiles('**/package-lock.json')}}    
+            - name : Install Dependencies
+              run : npm ci 
+            - name : Build Project
+              run : npm run build     #we have build script in our package json
+            - name : Deploy
+              run : echo "deploy success"  
 
-#this is all now go for add commit etc...              
 
+
+
+
+
+#this is all now go for add commit etc... this istructions are for deploy dsit not for deploy             
+#now suppose you made changes in the code in src in app.test.jsx at line 21 you write not as  expect(h2Element).nottoBeInTheDocument(); the code will not run properly even after push 
+#now suppose you add a comment in app.test.jsx or any ohter place and dont want it to trigger then in terminal write 
+#>>>git commit -m "added commit [skip ci]"#this will skips comments insertions easily.. and want to know mote about it go to skip workflow github actions in google.... it works only for push and pull request
 
 
 
@@ -39,4 +73,5 @@ jobs :
                   
 
 #now the above method is quite difficult there is another method go to google search github actions marketplace.
-#go to market place and search there checkout click on it and scroll down go to usage and start doing                
+#go to market place and search there checkout click on it and scroll down go to usage and start doing
+    
