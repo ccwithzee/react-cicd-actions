@@ -75,3 +75,7 @@ jobs:
         uses : actions/deploy-pages@v4
         with : 
             token : ${{secrets.GITHUB_TOKEN}} #it will automatically create a github token and its necessory 
+           
+         
+#this is all done this was all project i made .
+            
