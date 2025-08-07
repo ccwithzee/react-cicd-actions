@@ -7,7 +7,16 @@
 
 
 name : Deploy Dist
-on : [push , workflow_dispatch] ##workflow_dispatch will create a button in github actions sections
+#on : [push , workflow_dispatch] ##workflow_dispatch will create a button in github actions sections and alos this waas good but for to work different braches we use different thing.concurrency: 
+on : 
+    push :
+        branches : 
+            - main
+            - 'feature/" " '
+        paths-ignore : 
+            - '.github/workflows/*' #suppose you made changes in github workflow and dont want to trigger it then we use paths-ignore # and beacuse you use this you need to make cahnges in app.jsx just in h1 lines add by zeeshan i already did it so ..
+            - README.md #same as above line 
+    workflow_dispatch :         
 jobs :
     test: ##now the above method is quite difficult there is another method go to google search github actions marketplace.
           #go to market place and search there checkout click on it and scroll down go to usage and start doing
@@ -29,10 +38,10 @@ jobs :
             - name : Install Dependencies
               run : npm ci     #this will install the dependencies and ci means clean install it will install exact latest available version related to your work for dependencies 
             - name : Run tests
-              run : npm test   #this is what we name in package jason file at line 11    
-    deploy :
-        needs: test ##this will deploy both test and deploy at the same time in actions adn we dont want this so we use needs adn it will  first finish test then after it goes for deploy means first test run then deploy
-        runs-on : ubuntu-latest           #now we are using deployment
+              run : npm test   #this is what we name in package jason file at line 11   
+    build :            #we add another job named it build we mostly pasted the things from deploy ccause first i made deploy after test so yeah ..
+        needs : test
+        runs-on : ubuntu-latest
         steps : 
             - name : Get Code
               uses : actions/checkout@v4 
@@ -48,7 +57,36 @@ jobs :
             - name : Install Dependencies
               run : npm ci 
             - name : Build Project
-              run : npm run build     #we have build script in our package json
+              run : npm run build 
+            - name : Upload Dist Artifact
+              uses : actions/upload-artifact@v4                        #go to marketplace search for upload build artifact   
+              with : 
+                name : dist-files
+                path : dist
+    deploy :
+        needs: build ##this will deploy both test and deploy at the same time in actions adn we dont want this so we use needs adn it will  first finish test then after it goes for deploy means first test run  then build then deploy
+        runs-on : ubuntu-latest           #now we are using deployment
+        steps : 
+            - name : Download Dist Artifact # in jobs of build we upload this file and now we are downloading in deploly  
+              uses : actions/download-artifact@v4                        #go to marketplace search for downlaod build artifact   
+              with : 
+                name : dist-files
+                path : dist
+            #- name : Get Code                       ##NOTE ::: this all code i comments out is good but now i made another job of build thats why i need to make cahnegs however  line 85,86 run deploy and succesful remain same 
+             # uses : actions/checkout@v4 
+            #- name : Install Node 20
+            #  uses : actions/setup-node@v4 
+            #  with : 
+            #    node-version : 20
+            #- name : cache dependencies # now this cache is copied from above one it will install nodes in no time and theri dependencies for deploy cade which is after test .
+            #  uses : actions/cache@v4 #same get form marketplace
+            #  with : 
+            #    path : ~/.npm
+            #    key : ${{runner.os}}-node-${{ hashFiles('**/package-lock.json')}}    
+           # - name : Install Dependencies
+           #   run : npm ci 
+           # - name : Build Project
+            #  run : npm run build     #we have build script in our package json
             - name : Deploy
               run : echo "deploy success"  
 
