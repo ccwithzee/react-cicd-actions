@@ -1,0 +1,77 @@
+#we are using this yaml to deploy an app 
+#you also need to add link in josn file i added it as ::>  "homepage": "https://ccwithzee.github.io/react-cicd-actions", in line no 6 of packages-json 
+#and also in vite.config.json in line 11 you also need to write     base: '/react-cicd-actions/' base was already written i only add this cicd actions
+
+
+name: Deploy React to github pages
+on:
+  push:
+    branches:
+      - main
+      - 'feature/" "'
+    paths-ignore:
+      - '.github/workflows/*'
+      - README.md
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v4
+      - name: Install node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v4
+      - name: Install Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Project
+        run: npm run build
+      - name: Upload Dist Artifact
+        uses: actions/upload-pages-artifact@v3 #now we are working for deployment pages so we use v3 as in search for documentetion type upload pages artifact
+        with:
+          name: github-pages
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:  # # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+      
+    environment:     # Deploy to the github-pages environment
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}    #we are using steps.deployment because in steps at line 68  we gave id name as deployment thats why we are using steps.deployment
+    steps:
+      - name: Deploy to github pages
+        id : deployment
+        uses : actions/deploy-pages@v4
+        with : 
+            token : ${{secrets.GITHUB_TOKEN}} #it will automatically create a github token and its necessory 
